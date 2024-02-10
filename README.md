@@ -1,0 +1,2 @@
+# fritobot
+own discord bot
