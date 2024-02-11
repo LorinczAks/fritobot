@@ -46,4 +46,4 @@ async def on_message(message):
         #print(f'{message.content}, {url}')
         await message.channel.send(f'Added {search_yt(url)['title']} to queue')
 
-client.run("MTIwNTg0OTA2NDc5MzU3MTM1OA.GRG_qu.5tugjs6pCzCfzZ097YeIQkFAdxGHF7WndJfBkU")
+client.run("")
