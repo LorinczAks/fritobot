@@ -1,38 +1,16 @@
 # This example requires the 'message_content' intent.
 
-import os
-from decouple import config
+import fritobot
 import discord
-from yt_dlp import YoutubeDL
-#from youtubesearchpython import VideosSearch
+from decouple import config
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents)
+client = fritobot.fritobot(intents=intents)
 BOT_TOKEN = config('BOT_TOKEN')
 
-# setting up variables
-
-music_queue = []
-ytdl = YoutubeDL({'format': 'bestaudio/best'})
-
-vc = None
-is_playing = False
-is_paused = False
-
-
-
-# methods
-def search_yt(item):
-    if item.startswith("https://"):
-        title = ytdl.extract_info(item, download=False)["title"]
-        print(title)
-        return{'source':item, 'title':title}
-    
-    #search = VideosSearch(item, limit=1)
-    #return{'source':search.result()["result"][0]["link"], 'title':search.result()["result"][0]["title"]}
-
+FFMPEG_OPTIONS = {'options': '-vn'}
 
 @client.event
 async def on_ready():
@@ -44,8 +22,23 @@ async def on_message(message):
         return
 
     if message.content.startswith('/play'):
-        url = message.content.split(" ")[1]
-        #print(f'{message.content}, {url}')
-        await message.channel.send(f'Added {search_yt(url)['title']} to queue')
+        if not client.is_playing:
+            url = message.content.split(" ")[1]
+            # to join voice channel and start playing the song
+            channel_to_join = message.author.voice.channel
+            client.vc = await channel_to_join.connect()
+
+            data = client.ytdl.extract_info(url, download=False)
+            song = data['url']
+            client.vc.play(discord.FFmpegPCMAudio(song, executable= "ffmpeg.exe", **FFMPEG_OPTIONS))
+            client.is_playing = True
+        else:
+            # its already playing so we append the song to the queue
+            url = message.content.split(" ")[1]
+            await message.channel.send(f'Added {client.search_yt(url)['title']} to queue')
+            client.music_queue.append(client.search_yt(url)['source'])
+
+
+
 
 client.run(BOT_TOKEN)
