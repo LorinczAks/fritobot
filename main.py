@@ -1,5 +1,7 @@
 # This example requires the 'message_content' intent.
 
+import os
+from decouple import config
 import discord
 from yt_dlp import YoutubeDL
 #from youtubesearchpython import VideosSearch
@@ -8,7 +10,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
-
+BOT_TOKEN = config('BOT_TOKEN')
 
 # setting up variables
 
@@ -46,4 +48,4 @@ async def on_message(message):
         #print(f'{message.content}, {url}')
         await message.channel.send(f'Added {search_yt(url)['title']} to queue')
 
-client.run("")
+client.run(BOT_TOKEN)
