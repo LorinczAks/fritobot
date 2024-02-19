@@ -25,12 +25,9 @@ class fritobot(discord.Client):
     def search_yt(self, item):
         if item.startswith("https://"):
             title = self.ytdl.extract_info(item, download=False)["title"]
-            #print(title)
             return{'source':item, 'title':title}
         
         search = youtubesearchpython.VideosSearch(item, limit=1)
-        result_dict = youtubesearchpython.VideosSearch(item, limit=10)
-        print(f"---------------------------------------------\n{[f"{item["title"]}" for item in result_dict.result()["result"]]}\n----------------------------------------------------------\n")
         return{'source':search.result()["result"][0]["link"], 'title':search.result()["result"][0]["title"]}
 
 
