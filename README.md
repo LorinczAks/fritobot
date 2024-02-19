@@ -4,13 +4,21 @@ It can hold a queue of songs as well. Basic functions like skipping and pausing 
 Here is the full list of features:
 
 *Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord
+
 /play [yt url]/[search query] - plays searched song; if the bot is playing, adds it to queue
+
 /queue - shows songs currently in queue
+
 /pause - pauses playback
+
 /resume - resumes playback
+
 /skip - skips current song
+
 /remove - removes the latest added song from queue
+
 /stop - stops playback, deletes queue and leaves voice channel
+
 /help - shows this manual*
 
 # Creating your own bot
