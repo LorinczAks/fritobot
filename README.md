@@ -3,22 +3,14 @@ This discord bot is able to join your voice channel and play the desired songs f
 It can hold a queue of songs as well. Basic functions like skipping and pausing are implemented.
 Here is the full list of features:
 
-*Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord
-
-/play [yt url]/[search query] - plays searched song; if the bot is playing, adds it to queue
-
-/queue - shows songs currently in queue
-
-/pause - pauses playback
-
-/resume - resumes playback
-
-/skip - skips current song
-
-/remove - removes the latest added song from queue
-
-/stop - stops playback, deletes queue and leaves voice channel
-
+*Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord  
+/play [yt url]/[search query] - plays searched song; if the bot is playing, adds it to queue  
+/queue - shows songs currently in queue  
+/pause - pauses playback  
+/resume - resumes playback  
+/skip - skips current song  
+/remove - removes the latest added song from queue  
+/stop - stops playback, deletes queue and leaves voice channel  
 /help - shows this manual*
 
 # Creating your own bot
@@ -29,6 +21,5 @@ In order for your code to be able to use environment variables like your discord
 ```
 BOT_TOKEN=your-bot-token-goes-here
 ```
-in it.
-
+in it.  
 For a detailed explanation on using environmental variables in python, I recommend [this page](https://able.bio/rhett/how-to-set-and-get-environment-variables-in-python--274rgt5).
