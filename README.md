@@ -13,10 +13,10 @@ Here is the full list of features:
 /stop - stops playback, deletes queue and leaves voice channel  
 /help - shows this manual*
 
-# Creating your own bot
+### Creating your own bot
 You can read about how to create and get started with your own bot in [discord developer documentation](https://discord.com/developers/docs/intro)
 
-# Token
+### Token
 In order for your code to be able to use environment variables like your discord bot token, you need to create an .env file in main.py's directory and have
 ```
 BOT_TOKEN=your-bot-token-goes-here
