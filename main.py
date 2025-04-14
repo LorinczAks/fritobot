@@ -1,19 +1,16 @@
-import fritobot
-import discord
-from decouple import config
 import asyncio
+from decouple import config
+import discord
+
+
+import fritobot
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = fritobot.fritobot(intents=intents)
 
-# grabbing bot token from env file
 BOT_TOKEN = config('BOT_TOKEN')
-
-FFMPEG_OPTIONS = {'options': '-vn',
-                  "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-                  }
 
 @client.event
 async def on_ready():
@@ -23,38 +20,58 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-
-    if message.content.startswith('/play'):
-        # implementing playing a song if nothing is playing currently
-        if not client.is_playing:
-            query = ' '.join(message.content.split(" ")[1:])
-            # to join voice channel and start playing the song
-            if message.author.voice == None:
-                await message.channel.send("```Join a voice channel to use bot!```")
+    query = message.content.split(" ")
+    if query[0] == '/play':
+        if '&list=' in query[1]:
+            songs = await client.search_playlist(query[1])
+            if not songs:
+                await message.channel.send("```Couldn't find any results for that query```")
                 return
-            channel_to_join = message.author.voice.channel
-            if client.vc == None:
-                client.vc = await channel_to_join.connect()
-            
-            song = client.search_yt(query)
-            data = client.ytdl.extract_info(song['source'], download=False)
-            client.music_queue.append((data['url'], data['title']))
-            await message.channel.send(f"```Playing {data['title']}```")
-            await client.play_next()
+            while(songs):
+                song = songs.pop(0)
+                if not client.is_playing:
+                    if message.author.voice is None:
+                        await message.channel.send("```Join a voice channel to use bot!```")
+                        return
+                    channel_to_join = message.author.voice.channel
+                    if client.vc is None:
+                        client.vc = await channel_to_join.connect()
+
+                    client.music_queue.append((song['source'], song['title'], song['url']))
+                    await message.channel.send(f"```Playing {song['title']}```")
+                    await client.play_next()
+                else:
+                    client.music_queue.append((song['source'], song['title'], song['url']))
+                    await message.channel.send(f"```Added {song['title']} to queue```")
         else:
-            # its already playing so we append the song to the queue
-            query = ' '.join(message.content.split(" ")[1:])
-            song = client.search_yt(query)
-            data = client.ytdl.extract_info(song['source'], download=False)
-            await message.channel.send(f"```Added {data['title']} to queue```")
-            client.music_queue.append((data['url'], data['title']))
-    elif message.content.startswith('/queue'):
+            song = await client.search_yt(' '.join(query[1:]))
+            if not song:
+                await message.channel.send("```Couldn't find any results for that query```")
+                return
+
+            if not client.is_playing:
+                # If nothing is playing, start playback immediately
+                if message.author.voice is None:
+                    await message.channel.send("```Join a voice channel to use bot!```")
+                    return
+                channel_to_join = message.author.voice.channel
+                if client.vc is None:
+                    client.vc = await channel_to_join.connect()
+
+                client.music_queue.append((song['source'], song['title'], song['url']))
+                await message.channel.send(f"```Playing {song['title']}```")
+                await client.play_next()
+            else:
+                # If something is playing, just add the song to the queue
+                client.music_queue.append((song['source'], song['title'], song['url']))
+                await message.channel.send(f"```Added {song['title']} to queue```")        
+    elif query[0] == '/queue':
         # showing songs currently in queue
         if len(client.music_queue) == 0:
             await message.channel.send("```There are currently no songs in queue```")
         else:
-            await message.channel.send(f"```Song queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue])}```")
-    elif message.content.startswith('/stop'):
+            await message.channel.send(f"```Next 10 songs in queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue[:10]])}```")
+    elif query[0] == '/stop':
         # stopping playback, deleting queue and leaving voice channel
         client.music_queue.clear()
         client.vc.stop()
@@ -63,13 +80,13 @@ async def on_message(message):
         client.vc = None
         await message.channel.send("```Deleted queue and left voice channel. Goodbye! <3```")
         client.is_playing = False
-    elif message.content.startswith('/skip'):
+    elif query[0] == '/skip':
         # stopping playback. since playing music is happening in loop, the next song starts playing
         client.vc.stop()
         await message.channel.send("```Skipped current song```")
         await asyncio.sleep(1)
         await client.play_next()
-    elif message.content.startswith('/pause'):
+    elif query[0] == '/pause':
         # implementing pausing/resuming playback
         if client.is_playing:
             await message.channel.send("```Paused playback```")
@@ -81,32 +98,40 @@ async def on_message(message):
             client.is_paused = False
             client.is_playing = True
             client.vc.resume()
-    elif message.content.startswith('/resume'):
+    elif query[0] == '/resume':
         # resuming playback
         if client.is_paused:
             await message.channel.send("```Resumed playback```")
             client.is_paused = False
             client.is_playing = True
             client.vc.resume()
-    elif message.content.startswith('/remove'):
+    elif query[0] == '/remove':
         # removing last song from queue
         if len(client.music_queue) > 0:
             client.music_queue.pop()
             await message.channel.send("```Last song removed from queue```")
         else:
-            await message.channel.send("```Queue is empty! Maybe you want to use /stop```")
-    elif message.content.startswith('/help'):
+            await message.channel.send("```Queue is empty!```")
+    elif query[0] == '/clearq':
+        # removing all songs from queue
+        if len(client.music_queue) > 0:
+            client.music_queue == []
+            await message.channel.send("```Queue cleared```")
+        else:
+            await message.channel.send("```Queue is already empty!```")
+    elif query[0] == '/help':
         # sending information about commands
         await message.channel.send(
             f"""
 ```
 Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord
-/play [yt url]/[search query] - plays searched song; if the bot is playing, adds it to queue
+/play [yt url]/[search query]/[playlist] - plays searched song(s); if the bot is playing, adds it to queue
 /queue - shows songs currently in queue
 /pause - pauses playback
 /resume - resumes playback
 /skip - skips current song
 /remove - removes the latest added song from queue
+/clearq - removes all songs from queue
 /stop - stops playback, deletes queue and leaves voice channel
 /help - shows this manual
 ```
