@@ -9,8 +9,8 @@ Here is the full list of features:
 /pause - pauses playback  
 /resume - resumes playback  
 /skip - skips current song  
-/remove - removes the latest added song from queue
-/clearq - removes all songs from queue
+/remove - removes the latest added song from queue  
+/clearq - removes all songs from queue  
 /stop - stops playback, deletes queue and leaves voice channel  
 /help - shows this manual*
 
