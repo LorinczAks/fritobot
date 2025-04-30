@@ -1,6 +1,7 @@
 import asyncio
 from decouple import config
 import discord
+import random
 
 
 import fritobot
@@ -22,7 +23,7 @@ async def on_message(message):
         return
     query = message.content.split(" ")
     if query[0] == '/play':
-        if '&list=' in query[1]:
+        if 'list=' in query[1]:
             songs = await client.search_playlist(query[1])
             if not songs:
                 await message.channel.send("```Couldn't find any results for that query```")
@@ -71,6 +72,13 @@ async def on_message(message):
             await message.channel.send("```There are currently no songs in queue```")
         else:
             await message.channel.send(f"```Next 10 songs in queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue[:10]])}```")
+    elif query[0] == '/shuffle':
+        # shuffles queue
+        if len(client.music_queue) == 0:
+            await message.channel.send("```There are currently no songs in queue```")
+        else:
+            random.shuffle(client.music_queue)
+            await message.channel.send(f"```Queue shuffled```")
     elif query[0] == '/stop':
         # stopping playback, deleting queue and leaving voice channel
         client.music_queue.clear()
@@ -115,7 +123,7 @@ async def on_message(message):
     elif query[0] == '/clearq':
         # removing all songs from queue
         if len(client.music_queue) > 0:
-            client.music_queue == []
+            client.music_queue = []
             await message.channel.send("```Queue cleared```")
         else:
             await message.channel.send("```Queue is already empty!```")
@@ -127,6 +135,7 @@ async def on_message(message):
 Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord
 /play [yt url]/[search query]/[playlist] - plays searched song(s); if the bot is playing, adds it to queue
 /queue - shows songs currently in queue
+/shuffle - shuffles song queue
 /pause - pauses playback
 /resume - resumes playback
 /skip - skips current song
