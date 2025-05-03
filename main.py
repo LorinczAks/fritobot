@@ -65,13 +65,35 @@ async def on_message(message):
             else:
                 # If something is playing, just add the song to the queue
                 client.music_queue.append((song['source'], song['title'], song['url']))
-                await message.channel.send(f"```Added {song['title']} to queue```")        
+                await message.channel.send(f"```Added {song['title']} to queue```")    
+    elif query[0] == '/next':
+        # puts song next in queue
+        song = await client.search_yt(' '.join(query[1:]))
+        if not song:
+            await message.channel.send("```Couldn't find any results for that query```")
+            return
+
+        if not client.is_playing:
+            # If nothing is playing, start playback immediately
+            if message.author.voice is None:
+                await message.channel.send("```Join a voice channel to use bot!```")
+                return
+            channel_to_join = message.author.voice.channel
+            if client.vc is None:
+                client.vc = await channel_to_join.connect()
+
+            client.music_queue.append((song['source'], song['title'], song['url']))
+            await message.channel.send(f"```Playing {song['title']}```")
+            await client.play_next()
+        else:
+            client.music_queue.insert(0, (song['source'], song['title'], song['url']))
+            await message.channel.send(f"```Added {song['title']} to play next```")
     elif query[0] == '/queue':
         # showing songs currently in queue
         if len(client.music_queue) == 0:
             await message.channel.send("```There are currently no songs in queue```")
         else:
-            await message.channel.send(f"```Next 10 songs in queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue[:10]])}```")
+            await message.channel.send(f"```{len(client.music_queue)} songs in queue. Next 10 songs in queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue[:10]])}```")
     elif query[0] == '/shuffle':
         # shuffles queue
         if len(client.music_queue) == 0:
@@ -134,7 +156,8 @@ async def on_message(message):
 ```
 Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord
 /play [yt url]/[search query]/[playlist] - plays searched song(s); if the bot is playing, adds it to queue
-/queue - shows songs currently in queue
+/next [yt url]/[search query] - adds song to queue to play next
+/queue - shows info about song queue
 /shuffle - shuffles song queue
 /pause - pauses playback
 /resume - resumes playback

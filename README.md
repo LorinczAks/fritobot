@@ -5,7 +5,8 @@ Here is the full list of features:
 
 *Welcome to fritobot help page! If you have further questions, feel free to reach out at @realaki on discord  
 /play [yt url]/[search query]/[playlist] - plays searched song(s); if the bot is playing, adds it to queue  
-/queue - shows songs currently in queue  
+/next [yt url]/[search query] - adds song to queue to play next  
+/queue - shows info about song queue  
 /shuffle - shuffles song queue  
 /pause - pauses playback  
 /resume - resumes playback  
