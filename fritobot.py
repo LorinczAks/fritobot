@@ -16,14 +16,17 @@ class fritobot(discord.Client):
         self.ytdl = YoutubeDL({'format': 'bestaudio/best', 'ignoreerrors': True, 'ignore_no_formats_error': True, 'quiet': True}) 
         self.is_playing = False
         self.is_paused = False
+        self.message_channel = ""
 
     async def play_next(self):
         if len(self.music_queue) > 0:
             self.is_playing = True
             data = self.music_queue.pop(0)
+            if not self.message_channel == "":
+                await self.message_channel.send(f"```Currently playing: {data['title']} by {data['uploader']}```")
 
             loop = asyncio.get_running_loop()
-            self.vc.play(discord.FFmpegOpusAudio(data[2], executable="ffmpeg.exe", **FFMPEG_OPTIONS),
+            self.vc.play(discord.FFmpegOpusAudio(data['url'], executable="ffmpeg.exe", **FFMPEG_OPTIONS),
                         after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(), loop))
         else:
             self.is_playing = False
@@ -32,7 +35,7 @@ class fritobot(discord.Client):
         loop = asyncio.get_running_loop()
         if item.startswith("https://"):
             info = await loop.run_in_executor(None, functools.partial(self.ytdl.extract_info, item, False))
-            return {'source': item, 'title': info['title'], 'url': info['url']}
+            return {'source': item, 'title': info['title'], 'url': info['url'], 'uploader': info['uploader']}
 
         item = f"ytsearch:{item}"
         info = await loop.run_in_executor(None, functools.partial(self.ytdl.extract_info, item, False))
@@ -41,13 +44,13 @@ class fritobot(discord.Client):
             return None
 
         entry = info['entries'][0]
-        return {'source': entry['webpage_url'], 'title': entry['title'], 'url': entry['url']}
+        return {'source': entry['webpage_url'], 'title': entry['title'], 'url': entry['url'], 'uploader': entry['uploader']}
 
     async def search_playlist(self, item):
         result = []
         loop = asyncio.get_running_loop()
         info = await loop.run_in_executor(None, functools.partial(self.ytdl.extract_info, item, False))
         for elem in info['entries']:
-            if 'webpage_url' in elem and 'title' in elem and 'url' in elem:
-                result.append({'source': elem['webpage_url'], 'title': elem['title'], 'url': elem['url']})
+            if 'webpage_url' in elem and 'title' in elem and 'url' in elem and 'uploader' in elem:
+                result.append({'source': elem['webpage_url'], 'title': elem['title'], 'url': elem['url'], 'uploader': elem['uploader']})
         return result

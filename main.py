@@ -22,6 +22,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     query = message.content.split(" ")
+    client.message_channel = message.channel
     if query[0] == '/play':
         if 'list=' in query[1]:
             songs = await client.search_playlist(query[1])
@@ -38,11 +39,11 @@ async def on_message(message):
                     if client.vc is None:
                         client.vc = await channel_to_join.connect()
 
-                    client.music_queue.append((song['source'], song['title'], song['url']))
-                    await message.channel.send(f"```Playing {song['title']}```")
+                    client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
+                    #await message.channel.send(f"```Playing {song['title']}```")
                     await client.play_next()
                 else:
-                    client.music_queue.append((song['source'], song['title'], song['url']))
+                    client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
                     await message.channel.send(f"```Added {song['title']} to queue```")
         else:
             song = await client.search_yt(' '.join(query[1:]))
@@ -59,12 +60,12 @@ async def on_message(message):
                 if client.vc is None:
                     client.vc = await channel_to_join.connect()
 
-                client.music_queue.append((song['source'], song['title'], song['url']))
-                await message.channel.send(f"```Playing {song['title']}```")
+                client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
+                #await message.channel.send(f"```Playing {song['title']}```")
                 await client.play_next()
             else:
                 # If something is playing, just add the song to the queue
-                client.music_queue.append((song['source'], song['title'], song['url']))
+                client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
                 await message.channel.send(f"```Added {song['title']} to queue```")    
     elif query[0] == '/next':
         # puts song next in queue
@@ -82,18 +83,18 @@ async def on_message(message):
             if client.vc is None:
                 client.vc = await channel_to_join.connect()
 
-            client.music_queue.append((song['source'], song['title'], song['url']))
-            await message.channel.send(f"```Playing {song['title']}```")
+            client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
+            #await message.channel.send(f"```Playing {song['title']}```")
             await client.play_next()
         else:
-            client.music_queue.insert(0, (song['source'], song['title'], song['url']))
+            client.music_queue.insert(0, {'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
             await message.channel.send(f"```Added {song['title']} to play next```")
     elif query[0] == '/queue':
         # showing songs currently in queue
         if len(client.music_queue) == 0:
             await message.channel.send("```There are currently no songs in queue```")
         else:
-            await message.channel.send(f"```{len(client.music_queue)} songs in queue. Next 10 songs in queue:\n{'\n'.join([f'{item[1]}' for item in client.music_queue[:10]])}```")
+            await message.channel.send(f"```{len(client.music_queue)} songs in queue. Next 10 songs in queue:\n{'\n'.join([f'{item['title']} by {item['uploader']}' for item in client.music_queue[:10]])}```")
     elif query[0] == '/shuffle':
         # shuffles queue
         if len(client.music_queue) == 0:
@@ -115,7 +116,7 @@ async def on_message(message):
         client.vc.stop()
         await message.channel.send("```Skipped current song```")
         await asyncio.sleep(1)
-        await client.play_next()
+        #await client.play_next()
     elif query[0] == '/pause':
         # implementing pausing/resuming playback
         if client.is_playing:
