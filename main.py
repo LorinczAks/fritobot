@@ -22,8 +22,8 @@ async def on_message(message):
     if message.author == client.user:
         return
     query = message.content.split(" ")
-    client.message_channel = message.channel
     if query[0] == '/play':
+        client.message_channel = message.channel
         if 'list=' in query[1]:
             songs = await client.search_playlist(query[1])
             if not songs:
@@ -68,6 +68,7 @@ async def on_message(message):
                 client.music_queue.append({'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
                 await message.channel.send(f"```Added {song['title']} to queue```")    
     elif query[0] == '/next':
+        client.message_channel = message.channel
         # puts song next in queue
         song = await client.search_yt(' '.join(query[1:]))
         if not song:
@@ -90,12 +91,14 @@ async def on_message(message):
             client.music_queue.insert(0, {'source': song['source'], 'title': song['title'], 'url': song['url'], 'uploader': song['uploader']})
             await message.channel.send(f"```Added {song['title']} to play next```")
     elif query[0] == '/queue':
+        client.message_channel = message.channel
         # showing songs currently in queue
         if len(client.music_queue) == 0:
             await message.channel.send("```There are currently no songs in queue```")
         else:
             await message.channel.send(f"```{len(client.music_queue)} songs in queue. Next 10 songs in queue:\n{'\n'.join([f'{item['title']} by {item['uploader']}' for item in client.music_queue[:10]])}```")
     elif query[0] == '/shuffle':
+        client.message_channel = message.channel
         # shuffles queue
         if len(client.music_queue) == 0:
             await message.channel.send("```There are currently no songs in queue```")
@@ -103,6 +106,7 @@ async def on_message(message):
             random.shuffle(client.music_queue)
             await message.channel.send(f"```Queue shuffled```")
     elif query[0] == '/stop':
+        client.message_channel = message.channel
         # stopping playback, deleting queue and leaving voice channel
         client.music_queue.clear()
         client.vc.stop()
@@ -112,12 +116,14 @@ async def on_message(message):
         await message.channel.send("```Deleted queue and left voice channel. Goodbye! <3```")
         client.is_playing = False
     elif query[0] == '/skip':
+        client.message_channel = message.channel
         # stopping playback. since playing music is happening in loop, the next song starts playing
         client.vc.stop()
         await message.channel.send("```Skipped current song```")
         await asyncio.sleep(1)
         #await client.play_next()
     elif query[0] == '/pause':
+        client.message_channel = message.channel
         # implementing pausing/resuming playback
         if client.is_playing:
             await message.channel.send("```Paused playback```")
@@ -130,6 +136,7 @@ async def on_message(message):
             client.is_playing = True
             client.vc.resume()
     elif query[0] == '/resume':
+        client.message_channel = message.channel
         # resuming playback
         if client.is_paused:
             await message.channel.send("```Resumed playback```")
@@ -137,6 +144,7 @@ async def on_message(message):
             client.is_playing = True
             client.vc.resume()
     elif query[0] == '/remove':
+        client.message_channel = message.channel
         # removing last song from queue
         if len(client.music_queue) > 0:
             client.music_queue.pop()
@@ -144,6 +152,7 @@ async def on_message(message):
         else:
             await message.channel.send("```Queue is empty!```")
     elif query[0] == '/clearq':
+        client.message_channel = message.channel
         # removing all songs from queue
         if len(client.music_queue) > 0:
             client.music_queue = []
@@ -151,6 +160,7 @@ async def on_message(message):
         else:
             await message.channel.send("```Queue is already empty!```")
     elif query[0] == '/help':
+        client.message_channel = message.channel
         # sending information about commands
         await message.channel.send(
             f"""
